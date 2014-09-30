@@ -8,5 +8,6 @@ For the latest working draft go here:
 * https://rawgithub.com/fmatthew5876/stdcxx-bitset/master/proposal/draft.html
 
 Std-Proposals discussion:
+* (Current) https://groups.google.com/a/isocpp.org/forum/#!topic/std-proposals/E95UokWxKbU
 * https://groups.google.com/a/isocpp.org/forum/#!topic/std-proposals/UjNcLLrGwv8
 
