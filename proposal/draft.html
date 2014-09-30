@@ -1,10 +1,10 @@
-<h1>Size and Alignment control for bitset</h1>
+<h1>Strongly Typed Bitset</h1>
 
 <ul>
 <li>Document Number: NXXXX</li>
 <li>Date: 2014-08-20</li>
-<li>Programming Language C++, Library Working Group</li>
-<li>Reply-to: Matthew Fioravante <a href="&#109;&#x61;&#105;&#108;&#x74;&#x6F;:&#102;&#109;&#97;&#116;&#x74;&#104;&#x65;&#119;&#x35;8&#x37;&#x36;&#64;&#103;&#x6D;&#97;&#x69;l&#46;&#x63;&#111;&#109;">&#102;&#109;&#97;&#116;&#x74;&#104;&#x65;&#119;&#x35;8&#x37;&#x36;&#64;&#103;&#x6D;&#97;&#x69;l&#46;&#x63;&#111;&#109;</a></li>
+<li>Programming Language C++, Library Evolution Working Group</li>
+<li>Reply-to: Matthew Fioravante <a href="&#x6D;a&#x69;l&#x74;&#x6F;:&#102;m&#x61;&#x74;&#x74;&#x68;&#101;&#119;&#53;&#x38;&#55;&#54;&#64;&#103;&#x6D;&#97;&#x69;&#x6C;&#x2E;&#x63;&#111;m">&#102;m&#x61;&#x74;&#x74;&#x68;&#101;&#119;&#53;&#x38;&#55;&#54;&#64;&#103;&#x6D;&#97;&#x69;&#x6C;&#x2E;&#x63;&#111;m</a></li>
 </ul>
 
 <p>The latest draft, reference header, and links to past discussions on github: </p>
@@ -36,19 +36,21 @@ implementations may need to change the ABI of the pre-existing <code>std::bitset
 
 <h1>Motivation and Design</h1>
 
-<p>When dealing with bits, the usual method of implementation is to use
-an <code>unsigned</code> integral type and perform bit operations using logical operators, shifts, and masks.</p>
+<p>When dealing with bits, the classical method of implementation is to use
+an <code>unsigned</code> integral type and perform bit operations using logical operations, shifts, and masks.</p>
 
 <p>With C++11, we have <code>std::bitset</code> which is a nice abstraction for acting on the individual
 bits of a fixed size quantity.  The objective
-of <code>std::bitset</code> is to entirely replace unsigned integers for implementing small collections of
+of <code>std::bitset</code> should be to entirely replace unsigned integers for implementing small collections of
 bit flags. </p>
 
 <p>Often times, sets of bits or flags are included in binary protocols or
 other tightly packed small objects in memory. Due to the precision
 size and alignment requirements of such domains, <code>std::bitset</code> is
 unusable because the programmer has no control over the alignment or
-size of <code>std::bitset</code>.</p>
+size of <code>std::bitset</code>. Indeed it appears that <code>std::bitset</code> on
+x86_64 linux gcc is always at least 8 bytes. In some situations, the
+overhead of the extra space makes bitset unusable.</p>
 
 <p>There is no guidance to implementors on how they should implement <code>std::bitset</code>. There
 are two competing goals of optimizing for speed or for space. We argue that implementions
@@ -58,7 +60,7 @@ specify them through the interface.</p>
 <h1>Technical Specification</h1>
 
 <p>We will now describe the additions to the <code>&lt;experimental/bitset&gt;</code> header.
-This new declaration is aimed to eventually the current <code>std::bitset</code>.</p>
+This new declaration is aimed to eventually replace the current <code>std::bitset</code>.</p>
 
 <pre><code>namespace std {
 namespace experimental {
@@ -74,7 +76,7 @@ template &lt;size_T N, typename T = /* Implementation defined */&gt;
 static_assert(sizeof(bitset&lt;N,T&gt;) == sizeof(T) * (N / (sizeof(T) * CHAR_BIT) + 1));
 </code></pre>
 
-<p><em>note-- <code>bitset&lt;N,T&gt;</code> is not required to be implemented using type <code>T</code>, it only needs to satisfy the size and alignment constraints. --end node</em></p>
+<p><em>note-- <code>bitset&lt;N,T&gt;</code> is not required to actually be implemented using type <code>T</code>, it only needs to satisfy the size and alignment constraints. --end node</em></p>
 
 <p>There are no changes or additions to any of the public members of <code>bitset</code>.</p>
 
@@ -84,7 +86,7 @@ static_assert(sizeof(bitset&lt;N,T&gt;) == sizeof(T) * (N / (sizeof(T) * CHAR_BI
 
 <hr />
 
-<p>When choosing which type to use for <code>std::bitset&lt;N&gt;</code>, implementors should first try to optimize for
+<p>When choosing which default type to use for <code>std::bitset&lt;N&gt;</code>, implementors should first try to optimize for
 <em>speed</em>, and then optimize for <em>size</em>. A good choice of underlying type might be <code>uintN_fast_t</code> for each
 respective size category. Implementations are encouraged to use simd types for larger bitsets where appropriate.</p>
 
@@ -95,7 +97,7 @@ respective size category. Implementations are encouraged to use simd types for l
 <ul>
 <li>Optimizing for speed is the most commonly desired default for majority of use cases.</li>
 <li>Knowing and choosing the optimal integer size for speed requires platform dependent knowledge.</li>
-<li>Optimizing for speed is a very simple objective with one variable</li>
+<li>Optimizing for speed is a very simple objective function with one variable</li>
 <li>Optimizing for space requires programmer input as there are 2 variables in play, alignment and size</li>
 </ul>
 
