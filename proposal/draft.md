@@ -1,9 +1,9 @@
-Size and Alignment control for bitset
+Strongly Typed Bitset
 ==========================================
 
 * Document Number: NXXXX
 * Date: 2014-08-20
-* Programming Language C++, Library Working Group
+* Programming Language C++, Library Evolution Working Group
 * Reply-to: Matthew Fioravante <fmatthew5876@gmail.com>
 
 The latest draft, reference header, and links to past discussions on github: 
@@ -37,19 +37,21 @@ implementations may need to change the ABI of the pre-existing `std::bitset<N>`.
 Motivation and Design
 ================
 
-When dealing with bits, the usual method of implementation is to use
-an `unsigned` integral type and perform bit operations using logical operators, shifts, and masks.
+When dealing with bits, the classical method of implementation is to use
+an `unsigned` integral type and perform bit operations using logical operations, shifts, and masks.
 
 With C++11, we have `std::bitset` which is a nice abstraction for acting on the individual
 bits of a fixed size quantity.  The objective
-of `std::bitset` is to entirely replace unsigned integers for implementing small collections of
+of `std::bitset` should be to entirely replace unsigned integers for implementing small collections of
 bit flags. 
 
 Often times, sets of bits or flags are included in binary protocols or
 other tightly packed small objects in memory. Due to the precision
 size and alignment requirements of such domains, `std::bitset` is
 unusable because the programmer has no control over the alignment or
-size of `std::bitset`.
+size of `std::bitset`. Indeed it appears that `std::bitset` on
+x86_64 linux gcc is always at least 8 bytes. In some situations, the
+overhead of the extra space makes bitset unusable.
 
 There is no guidance to implementors on how they should implement `std::bitset`. There
 are two competing goals of optimizing for speed or for space. We argue that implementions
@@ -60,7 +62,7 @@ Technical Specification
 ====================
 
 We will now describe the additions to the `<experimental/bitset>` header.
-This new declaration is aimed to eventually the current `std::bitset`.
+This new declaration is aimed to eventually replace the current `std::bitset`.
 
     namespace std {
     namespace experimental {
@@ -74,7 +76,7 @@ This new declaration is aimed to eventually the current `std::bitset`.
     static_assert(alignof(bitset<N,T>) == alignof(T));
     static_assert(sizeof(bitset<N,T>) == sizeof(T) * (N / (sizeof(T) * CHAR_BIT) + 1));
 
-*note-- `bitset<N,T>` is not required to be implemented using type `T`, it only needs to satisfy the size and alignment constraints. --end node*
+*note-- `bitset<N,T>` is not required to actually be implemented using type `T`, it only needs to satisfy the size and alignment constraints. --end node*
 
 There are no changes or additions to any of the public members of `bitset`.
 
@@ -85,7 +87,7 @@ The following paragraph shall be included in the standard:
 
 ------------------------------
 
-When choosing which type to use for `std::bitset<N>`, implementors should first try to optimize for
+When choosing which default type to use for `std::bitset<N>`, implementors should first try to optimize for
 *speed*, and then optimize for *size*. A good choice of underlying type might be `uintN_fast_t` for each
 respective size category. Implementations are encouraged to use simd types for larger bitsets where appropriate.
 
@@ -95,7 +97,7 @@ We recommend implementations to optimize for speed over space for the following 
 
 * Optimizing for speed is the most commonly desired default for majority of use cases.
 * Knowing and choosing the optimal integer size for speed requires platform dependent knowledge.
-* Optimizing for speed is a very simple objective with one variable
+* Optimizing for speed is a very simple objective function with one variable
 * Optimizing for space requires programmer input as there are 2 variables in play, alignment and size
 
 ## Conceptual implementation
