@@ -66,13 +66,14 @@ This new declaration is aimed to eventually replace the current `std::bitset`.
 
     namespace std {
     namespace experimental {
-    template <size_T N, typename T = /* Implementation defined */>
+    template <size_t N, typename T = /* Implementation defined */>
       class bitset;
     } //namespace experimental
     } // namespace std
 
 `std::bitset<N,T>` shall have the following constraints:
 
+    static_assert(is_integral<T>::value);
     static_assert(alignof(bitset<N,T>) == alignof(T));
     static_assert(sizeof(bitset<N,T>) == sizeof(T) * (N / (sizeof(T) * CHAR_BIT) + 1));
 
