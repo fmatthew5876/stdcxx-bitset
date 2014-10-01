@@ -4,7 +4,7 @@
 <li>Document Number: NXXXX</li>
 <li>Date: 2014-08-20</li>
 <li>Programming Language C++, Library Evolution Working Group</li>
-<li>Reply-to: Matthew Fioravante <a href="&#x6D;a&#x69;l&#x74;&#x6F;:&#102;m&#x61;&#x74;&#x74;&#x68;&#101;&#119;&#53;&#x38;&#55;&#54;&#64;&#103;&#x6D;&#97;&#x69;&#x6C;&#x2E;&#x63;&#111;m">&#102;m&#x61;&#x74;&#x74;&#x68;&#101;&#119;&#53;&#x38;&#55;&#54;&#64;&#103;&#x6D;&#97;&#x69;&#x6C;&#x2E;&#x63;&#111;m</a></li>
+<li>Reply-to: Matthew Fioravante <a href="&#109;&#x61;&#x69;&#x6C;&#116;o:&#102;&#x6D;a&#x74;&#116;&#104;&#x65;&#x77;&#x35;&#56;&#55;&#x36;&#64;&#103;&#x6D;&#97;i&#x6C;&#x2E;c&#111;&#109;">&#102;&#x6D;a&#x74;&#116;&#104;&#x65;&#x77;&#x35;&#56;&#55;&#x36;&#64;&#103;&#x6D;&#97;i&#x6C;&#x2E;c&#111;&#109;</a></li>
 </ul>
 
 <p>The latest draft, reference header, and links to past discussions on github: </p>
@@ -64,7 +64,7 @@ This new declaration is aimed to eventually replace the current <code>std::bitse
 
 <pre><code>namespace std {
 namespace experimental {
-template &lt;size_T N, typename T = /* Implementation defined */&gt;
+template &lt;size_t N, typename T = /* Implementation defined */&gt;
   class bitset;
 } //namespace experimental
 } // namespace std
@@ -72,7 +72,8 @@ template &lt;size_T N, typename T = /* Implementation defined */&gt;
 
 <p><code>std::bitset&lt;N,T&gt;</code> shall have the following constraints:</p>
 
-<pre><code>static_assert(alignof(bitset&lt;N,T&gt;) == alignof(T));
+<pre><code>static_assert(is_integral&lt;T&gt;::value);
+static_assert(alignof(bitset&lt;N,T&gt;) == alignof(T));
 static_assert(sizeof(bitset&lt;N,T&gt;) == sizeof(T) * (N / (sizeof(T) * CHAR_BIT) + 1));
 </code></pre>
 
