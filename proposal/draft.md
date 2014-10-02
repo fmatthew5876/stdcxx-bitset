@@ -15,7 +15,6 @@ Introduction
 
 The proposal enhances `std::bitset` by adding a new template parameter which 
 allows the programmer to control the size and alignment of the underlying representation.
-It also provides guidance to implementors for how to implement `std::bitset<N>`.
 
 This proposal is aimed for a C++ Technical Specification.
 
@@ -24,21 +23,20 @@ Impact on the standard
 
 This proposal is a pure library extension. It changes the
 template signature of `std::bitset` by adding a new template parameter.
-It also adds implementation recommendations to the standard for `std::bitset`.
+It also adds 2 new aliases `std::fast_bitset` and `std::small_bitset`.
 
 Impact on Implementations
 =============================
 
 Implementation of this proposal will likely break the ABI of all standard library
 implementations of `std::bitset`. Adding a new template parameter may change the mangled
-name of the type. After following the recommendations laid out in this paper, some
-implementations may need to change the ABI of the pre-existing `std::bitset<N>`.
+name of the type.
 
 Motivation and Design
 ================
 
 When dealing with bits, the classical method of implementation is to use
-an `unsigned` integral type and perform bit operations using logical operations, shifts, and masks.
+an unsigned integral type and perform bit operations using logical operations, shifts, and masks.
 
 With C++11, we have `std::bitset` which is a nice abstraction for acting on the individual
 bits of a fixed size quantity.  The objective
@@ -46,22 +44,26 @@ of `std::bitset` should be to entirely replace unsigned integers for implementin
 bit flags. 
 
 Often times, sets of bits or flags are included in binary protocols or
-other tightly packed small objects in memory. Due to the precision
+other tightly packed small objects in memory. Due to the precise
 size and alignment requirements of such domains, `std::bitset` is
 unusable because the programmer has no control over the alignment or
 size of `std::bitset`. Indeed it appears that `std::bitset` on
-x86_64 linux gcc is always at least 8 bytes. In some situations, the
+x86_64 linux gcc is always at least 8 bytes.
+In some situations, the
 overhead of the extra space makes bitset unusable.
 
-There is no guidance to implementors on how they should implement `std::bitset`. There
-are two competing goals of optimizing for speed or for space. We argue that implementions
-should always optimize for speed by default. Users who have tighter size contraints can
-specify them through the interface.
+In addition, sometimes users may want a `bitset` object whose underlying representation
+has been automatically optimize for speed or space on a given platform. For this we provide
+`fast_bitset` and `small_bitset`.
 
 Technical Specification
 ====================
 
 We will now describe the additions to the `<experimental/bitset>` header.
+
+std::bitset&lt;N,T&gt;
+--------------------------
+
 This new declaration is aimed to eventually replace the current `std::bitset`.
 
     namespace std {
@@ -74,43 +76,74 @@ This new declaration is aimed to eventually replace the current `std::bitset`.
 `std::bitset<N,T>` shall have the following constraints:
 
     static_assert(is_integral<T>::value);
-    static_assert(alignof(bitset<N,T>) == alignof(T));
-    static_assert(sizeof(bitset<N,T>) == sizeof(T) * (N / (sizeof(T) * CHAR_BIT) + 1));
+    static_assert(alignof(bitset<N,T>) == alignof(T[N / (sizeof(T) * CHAR_BIT) + 1]));
+    static_assert(sizeof(bitset<N,T>) == sizeof(T[N / (sizeof(T) * CHAR_BIT) + 1]));
 
-*note-- `bitset<N,T>` is not required to actually be implemented using type `T`, it only needs to satisfy the size and alignment constraints. --end node*
+*[note-- `bitset<N,T>` is not required to actually be implemented using an array of type `T`, it only needs to satisfy the size and alignment constraints. --end node]*
 
 There are no changes or additions to any of the public members of `bitset`.
 
-Implementors guide for std::bitset&lt;N&gt;
-====================================
+###Implementation guidance for the default `T`
 
-The following paragraph shall be included in the standard:
+The default type `T` used for `std::bitset<N,T>` is implementation defined. This behavior is provided
+for backwards source compatibility with C++14. We offer the following recommendations for
+platforms in choosing which type to use.
 
-------------------------------
+* Most general platforms should choose `T` as to optimize for speed (see below: `fast_bitset<N>`)
+* Memory constrained platforms should choose `T` as to optimize for space (see below: `small_bitset<N>`)
+* If backwards compatibility is of primary concern, platforms can continue to use the same type used in C++14.
+Note that changing the template arguments of bitset will already break ABI compatibility on most platforms.
+Implementors may choose to take this oportunity to change `T` to optimize for speed or space.
 
-When choosing which default type to use for `std::bitset<N>`, implementors should first try to optimize for
-*speed*, and then optimize for *size*. A good choice of underlying type might be `uintN_fast_t` for each
-respective size category. Implementations are encouraged to use simd types for larger bitsets where appropriate.
-
-------------------------------
-
-We recommend implementations to optimize for speed over space for the following reasons:
-
-* Optimizing for speed is the most commonly desired default for majority of use cases.
-* Knowing and choosing the optimal integer size for speed requires platform dependent knowledge.
-* Optimizing for speed is a very simple objective function with one variable
-* Optimizing for space requires programmer input as there are 2 variables in play, alignment and size
-
-## Conceptual implementation
+### Conceptual implementation
 
 A conforming implementation could be constructed using the following data model.
 
     template <size_t N, typename T>
-      struct bitset {
-        T x[sizeof(T) * (N / (sizeof(T) * CHAR_BIT) + 1)];
-      } alignas(T);
+      struct alignas(T) bitset {
+        T x[N / (sizeof(T) * CHAR_BIT) + 1];
+      };
 
-Note that this implementation also works on Linux i386 where `sizeof(long long) == 8` but `struct { long long t; } t; sizeof(t) == 4`.
+Note that this implementation also works on Linux i386 where `sizeof(long long) == 8` but `struct t { long long x; }; alignof(t) == 4`.
+
+std::fast_bitset<N>
+-------------------------
+
+The type `fast_bitset<N>` shall be an alias for `std::bitset<N,T>`, where `T` is choosen to be the fastest underlying representation for `N` bits.
+
+###Example implementation
+
+    template <size_t N>
+    struct __fast_bitset_type : public
+      std::conditional<N > 32, uint_fast64_t,
+        std::conditional<N > 16, uint_fast32_t,
+          std::conditional<N > 8, uint_fast16_t,
+            uint_fast8_t
+          >
+        >
+      > {};
+
+    template <size_t N> using fast_bitset = bitset<N,typename __fast_bitset_type<N>::type>;
+
+std::small_bitset<N>
+-----------------------
+
+The type `fast_bitset<N>` shall be an alias for `std::bitset<N,T>`, where `T` is choosen to be the smallest underlying representation for `N` bits.
+Note that there are no restrictions on alignment.
+
+###Example implementation
+
+    template <size_t N>
+    struct __small_bitset_type : public
+      std::conditional<N % 64 > 32 || N % 64 == 0, uint_least64_t,
+        std::conditional<N % 64 > 16, uint_least32_t,
+          std::conditional<N % 64 > 8, uint_least16_t,
+            uint_least8_t
+          >
+        >
+      > {};
+
+    template <size_t N> using small_bitset = bitset<N,typename __small_bitset_type<N>::type>;
 
 Use Cases
 ==================
