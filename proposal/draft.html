@@ -4,7 +4,7 @@
 <li>Document Number: NXXXX</li>
 <li>Date: 2014-08-20</li>
 <li>Programming Language C++, Library Evolution Working Group</li>
-<li>Reply-to: Matthew Fioravante <a href="&#109;&#x61;&#x69;&#x6C;&#116;o:&#102;&#x6D;a&#x74;&#116;&#104;&#x65;&#x77;&#x35;&#56;&#55;&#x36;&#64;&#103;&#x6D;&#97;i&#x6C;&#x2E;c&#111;&#109;">&#102;&#x6D;a&#x74;&#116;&#104;&#x65;&#x77;&#x35;&#56;&#55;&#x36;&#64;&#103;&#x6D;&#97;i&#x6C;&#x2E;c&#111;&#109;</a></li>
+<li>Reply-to: Matthew Fioravante <a href="m&#x61;i&#x6C;&#x74;&#111;:&#x66;&#x6D;&#97;&#116;&#116;&#x68;&#101;&#x77;&#53;&#x38;&#x37;&#x36;&#64;&#103;&#109;&#97;&#x69;&#x6C;&#46;&#99;&#111;&#x6D;">&#x66;&#x6D;&#97;&#116;&#116;&#x68;&#101;&#x77;&#53;&#x38;&#x37;&#x36;&#64;&#103;&#109;&#97;&#x69;&#x6C;&#46;&#99;&#111;&#x6D;</a></li>
 </ul>
 
 <p>The latest draft, reference header, and links to past discussions on github: </p>
@@ -16,8 +16,7 @@
 <h1>Introduction</h1>
 
 <p>The proposal enhances <code>std::bitset</code> by adding a new template parameter which 
-allows the programmer to control the size and alignment of the underlying representation.
-It also provides guidance to implementors for how to implement <code>std::bitset&lt;N&gt;</code>.</p>
+allows the programmer to control the size and alignment of the underlying representation.</p>
 
 <p>This proposal is aimed for a C++ Technical Specification.</p>
 
@@ -25,19 +24,18 @@ It also provides guidance to implementors for how to implement <code>std::bitset
 
 <p>This proposal is a pure library extension. It changes the
 template signature of <code>std::bitset</code> by adding a new template parameter.
-It also adds implementation recommendations to the standard for <code>std::bitset</code>.</p>
+It also adds 2 new aliases <code>std::fast_bitset</code> and <code>std::small_bitset</code>.</p>
 
 <h1>Impact on Implementations</h1>
 
 <p>Implementation of this proposal will likely break the ABI of all standard library
 implementations of <code>std::bitset</code>. Adding a new template parameter may change the mangled
-name of the type. After following the recommendations laid out in this paper, some
-implementations may need to change the ABI of the pre-existing <code>std::bitset&lt;N&gt;</code>.</p>
+name of the type.</p>
 
 <h1>Motivation and Design</h1>
 
 <p>When dealing with bits, the classical method of implementation is to use
-an <code>unsigned</code> integral type and perform bit operations using logical operations, shifts, and masks.</p>
+an unsigned integral type and perform bit operations using logical operations, shifts, and masks.</p>
 
 <p>With C++11, we have <code>std::bitset</code> which is a nice abstraction for acting on the individual
 bits of a fixed size quantity.  The objective
@@ -45,22 +43,25 @@ of <code>std::bitset</code> should be to entirely replace unsigned integers for 
 bit flags. </p>
 
 <p>Often times, sets of bits or flags are included in binary protocols or
-other tightly packed small objects in memory. Due to the precision
+other tightly packed small objects in memory. Due to the precise
 size and alignment requirements of such domains, <code>std::bitset</code> is
 unusable because the programmer has no control over the alignment or
 size of <code>std::bitset</code>. Indeed it appears that <code>std::bitset</code> on
-x86_64 linux gcc is always at least 8 bytes. In some situations, the
+x86_64 linux gcc is always at least 8 bytes.
+In some situations, the
 overhead of the extra space makes bitset unusable.</p>
 
-<p>There is no guidance to implementors on how they should implement <code>std::bitset</code>. There
-are two competing goals of optimizing for speed or for space. We argue that implementions
-should always optimize for speed by default. Users who have tighter size contraints can
-specify them through the interface.</p>
+<p>In addition, sometimes users may want a <code>bitset</code> object whose underlying representation
+has been automatically optimize for speed or space on a given platform. For this we provide
+<code>fast_bitset</code> and <code>small_bitset</code>.</p>
 
 <h1>Technical Specification</h1>
 
-<p>We will now describe the additions to the <code>&lt;experimental/bitset&gt;</code> header.
-This new declaration is aimed to eventually replace the current <code>std::bitset</code>.</p>
+<p>We will now describe the additions to the <code>&lt;experimental/bitset&gt;</code> header.</p>
+
+<h2>std::bitset&lt;N,T&gt;</h2>
+
+<p>This new declaration is aimed to eventually replace the current <code>std::bitset</code>.</p>
 
 <pre><code>namespace std {
 namespace experimental {
@@ -73,46 +74,78 @@ template &lt;size_t N, typename T = /* Implementation defined */&gt;
 <p><code>std::bitset&lt;N,T&gt;</code> shall have the following constraints:</p>
 
 <pre><code>static_assert(is_integral&lt;T&gt;::value);
-static_assert(alignof(bitset&lt;N,T&gt;) == alignof(T));
-static_assert(sizeof(bitset&lt;N,T&gt;) == sizeof(T) * (N / (sizeof(T) * CHAR_BIT) + 1));
+static_assert(alignof(bitset&lt;N,T&gt;) == alignof(T[N / (sizeof(T) * CHAR_BIT) + 1]));
+static_assert(sizeof(bitset&lt;N,T&gt;) == sizeof(T[N / (sizeof(T) * CHAR_BIT) + 1]));
 </code></pre>
 
-<p><em>note-- <code>bitset&lt;N,T&gt;</code> is not required to actually be implemented using type <code>T</code>, it only needs to satisfy the size and alignment constraints. --end node</em></p>
+<p><em>[note-- <code>bitset&lt;N,T&gt;</code> is not required to actually be implemented using an array of type <code>T</code>, it only needs to satisfy the size and alignment constraints. --end node]</em></p>
 
 <p>There are no changes or additions to any of the public members of <code>bitset</code>.</p>
 
-<h1>Implementors guide for std::bitset&lt;N&gt;</h1>
+<h3>Implementation guidance for the default <code>T</code></h3>
 
-<p>The following paragraph shall be included in the standard:</p>
-
-<hr />
-
-<p>When choosing which default type to use for <code>std::bitset&lt;N&gt;</code>, implementors should first try to optimize for
-<em>speed</em>, and then optimize for <em>size</em>. A good choice of underlying type might be <code>uintN_fast_t</code> for each
-respective size category. Implementations are encouraged to use simd types for larger bitsets where appropriate.</p>
-
-<hr />
-
-<p>We recommend implementations to optimize for speed over space for the following reasons:</p>
+<p>The default type <code>T</code> used for <code>std::bitset&lt;N,T&gt;</code> is implementation defined. This behavior is provided
+for backwards source compatibility with C++14. We offer the following recommendations for
+platforms in choosing which type to use.</p>
 
 <ul>
-<li>Optimizing for speed is the most commonly desired default for majority of use cases.</li>
-<li>Knowing and choosing the optimal integer size for speed requires platform dependent knowledge.</li>
-<li>Optimizing for speed is a very simple objective function with one variable</li>
-<li>Optimizing for space requires programmer input as there are 2 variables in play, alignment and size</li>
+<li>Most general platforms should choose <code>T</code> as to optimize for speed (see below: <code>fast_bitset&lt;N&gt;</code>)</li>
+<li>Memory constrained platforms should choose <code>T</code> as to optimize for space (see below: <code>small_bitset&lt;N&gt;</code>)</li>
+<li>If backwards compatibility is of primary concern, platforms can continue to use the same type used in C++14.
+Note that changing the template arguments of bitset will already break ABI compatibility on most platforms.
+Implementors may choose to take this oportunity to change <code>T</code> to optimize for speed or space.</li>
 </ul>
 
-<h2>Conceptual implementation</h2>
+<h3>Conceptual implementation</h3>
 
 <p>A conforming implementation could be constructed using the following data model.</p>
 
 <pre><code>template &lt;size_t N, typename T&gt;
-  struct bitset {
-    T x[sizeof(T) * (N / (sizeof(T) * CHAR_BIT) + 1)];
-  } alignas(T);
+  struct alignas(T) bitset {
+    T x[N / (sizeof(T) * CHAR_BIT) + 1];
+  };
 </code></pre>
 
-<p>Note that this implementation also works on Linux i386 where <code>sizeof(long long) == 8</code> but <code>struct { long long t; } t; sizeof(t) == 4</code>.</p>
+<p>Note that this implementation also works on Linux i386 where <code>sizeof(long long) == 8</code> but <code>struct t { long long x; }; alignof(t) == 4</code>.</p>
+
+<h2>std::fast_bitset<N></h2>
+
+<p>The type <code>fast_bitset&lt;N&gt;</code> shall be an alias for <code>std::bitset&lt;N,T&gt;</code>, where <code>T</code> is choosen to be the fastest underlying representation for <code>N</code> bits.</p>
+
+<h3>Example implementation</h3>
+
+<pre><code>template &lt;size_t N&gt;
+struct __fast_bitset_type : public
+  std::conditional&lt;N &gt; 32, uint_fast64_t,
+    std::conditional&lt;N &gt; 16, uint_fast32_t,
+      std::conditional&lt;N &gt; 8, uint_fast16_t,
+        uint_fast8_t
+      &gt;
+    &gt;
+  &gt; {};
+
+template &lt;size_t N&gt; using fast_bitset = bitset&lt;N,typename __fast_bitset_type&lt;N&gt;::type&gt;;
+</code></pre>
+
+<h2>std::small_bitset<N></h2>
+
+<p>The type <code>fast_bitset&lt;N&gt;</code> shall be an alias for <code>std::bitset&lt;N,T&gt;</code>, where <code>T</code> is choosen to be the smallest underlying representation for <code>N</code> bits.
+Note that there are no restrictions on alignment.</p>
+
+<h3>Example implementation</h3>
+
+<pre><code>template &lt;size_t N&gt;
+struct __small_bitset_type : public
+  std::conditional&lt;N % 64 &gt; 32 || N % 64 == 0, uint_least64_t,
+    std::conditional&lt;N % 64 &gt; 16, uint_least32_t,
+      std::conditional&lt;N % 64 &gt; 8, uint_least16_t,
+        uint_least8_t
+      &gt;
+    &gt;
+  &gt; {};
+
+template &lt;size_t N&gt; using small_bitset = bitset&lt;N,typename __small_bitset_type&lt;N&gt;::type&gt;;
+</code></pre>
 
 <h1>Use Cases</h1>
 
