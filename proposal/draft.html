@@ -4,7 +4,7 @@
 <li>Document Number: NXXXX</li>
 <li>Date: 2014-08-20</li>
 <li>Programming Language C++, Library Evolution Working Group</li>
-<li>Reply-to: Matthew Fioravante <a href="&#x6D;&#x61;&#105;&#x6C;&#116;&#111;:&#102;&#109;&#x61;&#x74;t&#x68;&#101;&#x77;&#x35;&#x38;&#x37;&#x36;&#64;&#103;&#109;&#x61;&#105;&#x6C;&#x2E;&#99;&#x6F;&#109;">&#102;&#109;&#x61;&#x74;t&#x68;&#101;&#x77;&#x35;&#x38;&#x37;&#x36;&#64;&#103;&#109;&#x61;&#105;&#x6C;&#x2E;&#99;&#x6F;&#109;</a></li>
+<li>Reply-to: Matthew Fioravante <a href="&#x6D;&#97;&#105;&#108;&#x74;&#111;:&#x66;&#109;&#97;&#x74;&#x74;&#x68;&#x65;w&#x35;8&#x37;&#x36;&#64;&#x67;&#x6D;&#97;&#x69;&#x6C;&#46;&#99;o&#x6D;">&#x66;&#109;&#97;&#x74;&#x74;&#x68;&#x65;w&#x35;8&#x37;&#x36;&#64;&#x67;&#x6D;&#97;&#x69;&#x6C;&#46;&#99;o&#x6D;</a></li>
 </ul>
 
 <p>The latest draft, reference header, and links to past discussions on github: </p>
@@ -120,9 +120,9 @@ Implementors may choose to take this oportunity to change default <code>T</code>
 The <code>bitset</code> must have the same size and alignment as this type.</p>
 
 <pre><code>template &lt;size_t N, typename T&gt;
-  underlying_type&amp; biset&lt;N,T&gt;::underlying();
+  underlying_type&amp; biset&lt;N,T&gt;::underlying() noexcept;
 template &lt;size_t N, typename T&gt;
-  const underlying_type&amp; bitset&lt;N,T&gt;::underlying() const;
+  const underlying_type&amp; bitset&lt;N,T&gt;::underlying() const noexcept;
 </code></pre>
 
 <p>These 2 accessors allow the programmer manual access to the underlying storage.
