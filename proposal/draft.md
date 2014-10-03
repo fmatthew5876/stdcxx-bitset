@@ -118,9 +118,9 @@ The `underlying_type` typedef is present to inform the programmer what kind of s
 The `bitset` must have the same size and alignment as this type.
 
     template <size_t N, typename T>
-      underlying_type& biset<N,T>::underlying();
+      underlying_type& biset<N,T>::underlying() noexcept;
     template <size_t N, typename T>
-      const underlying_type& bitset<N,T>::underlying() const;
+      const underlying_type& bitset<N,T>::underlying() const noexcept;
 
 These 2 accessors allow the programmer manual access to the underlying storage.
 The values of the bits from `0` to `N-1` in the returned reference will be the same as the corresponding bits in the bitset.
