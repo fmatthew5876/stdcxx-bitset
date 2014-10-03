@@ -4,7 +4,7 @@
 <li>Document Number: NXXXX</li>
 <li>Date: 2014-08-20</li>
 <li>Programming Language C++, Library Evolution Working Group</li>
-<li>Reply-to: Matthew Fioravante <a href="&#x6D;&#97;&#105;&#108;&#x74;&#111;:&#x66;&#109;&#97;&#x74;&#x74;&#x68;&#x65;w&#x35;8&#x37;&#x36;&#64;&#x67;&#x6D;&#97;&#x69;&#x6C;&#46;&#99;o&#x6D;">&#x66;&#109;&#97;&#x74;&#x74;&#x68;&#x65;w&#x35;8&#x37;&#x36;&#64;&#x67;&#x6D;&#97;&#x69;&#x6C;&#46;&#99;o&#x6D;</a></li>
+<li>Reply-to: Matthew Fioravante <a href="&#109;&#97;&#x69;&#108;&#x74;&#111;:&#x66;&#x6D;&#97;&#116;&#116;&#104;&#101;&#119;&#53;&#x38;&#55;&#54;&#64;&#103;m&#97;&#105;&#x6C;&#x2E;&#x63;&#x6F;&#x6D;">&#x66;&#x6D;&#97;&#116;&#116;&#104;&#101;&#119;&#53;&#x38;&#55;&#54;&#64;&#103;m&#97;&#105;&#x6C;&#x2E;&#x63;&#x6F;&#x6D;</a></li>
 </ul>
 
 <p>The latest draft, reference header, and links to past discussions on github: </p>
@@ -25,7 +25,7 @@ allows the programmer to control the size and alignment of the underlying repres
 <p>This proposal is a pure library extension. It changes the
 template signature of <code>std::bitset</code> by adding a new template parameter.
 It also adds 2 new aliases <code>std::fast_bitset</code> and <code>std::small_bitset</code> and
-3 new public members.</p>
+3 new public members, a new constructor overload and a new assignment operator overload.</p>
 
 <h1>Impact on Implementations</h1>
 
@@ -138,6 +138,17 @@ consistent after calling any member function of <code>bitset</code> or any free 
 <p>Note that while we do not require implementations to actually use <code>underlying_type</code> to implement <code>bitset</code>, we do require them to
 match the size and alignment constraints of <code>underlying_type</code>. Therefore if bitset is implemented using a different type, the
 implementation can internally perform a cast to <code>underlying_type</code> to implement these methods.</p>
+
+<h2>Copying bitsets of different types.</h2>
+
+<p>A bitset using one representation <code>T</code> may be copied from another bitset using a different representation <code>U</code>. We add the following
+constructor and assignment operator overloads.</p>
+
+<pre><code>template &lt;size_t N, typename T&gt; template &lt;typename U&gt;
+  bitset&lt;N,T&gt;::bitset(const bitset&lt;N,U&gt;&amp; other);
+template &lt;size_t N, typename T&gt; template &lt;typename U&gt;
+  bitset&lt;N,T&gt;&amp; bitset&lt;N,T&gt;::operator=(const bitset&lt;N,U&gt;&amp; other);
+</code></pre>
 
 <h2>std::fast_bitset&lt;N&gt;</h2>
 
