@@ -24,7 +24,7 @@ Impact on the standard
 This proposal is a pure library extension. It changes the
 template signature of `std::bitset` by adding a new template parameter.
 It also adds 2 new aliases `std::fast_bitset` and `std::small_bitset` and
-3 new public members.
+3 new public members, a new constructor overload and a new assignment operator overload.
 
 Impact on Implementations
 =============================
@@ -136,6 +136,17 @@ consistent after calling any member function of `bitset` or any free function wh
 Note that while we do not require implementations to actually use `underlying_type` to implement `bitset`, we do require them to
 match the size and alignment constraints of `underlying_type`. Therefore if bitset is implemented using a different type, the
 implementation can internally perform a cast to `underlying_type` to implement these methods.
+
+Copying bitsets of different types.
+-------------------------
+
+A bitset using one representation `T` may be copied from another bitset using a different representation `U`. We add the following
+constructor and assignment operator overloads.
+
+    template <size_t N, typename T> template <typename U>
+      bitset<N,T>::bitset(const bitset<N,U>& other);
+    template <size_t N, typename T> template <typename U>
+      bitset<N,T>& bitset<N,T>::operator=(const bitset<N,U>& other);
 
 
 std::fast\_bitset&lt;N&gt;
