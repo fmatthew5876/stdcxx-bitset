@@ -4,10 +4,10 @@
 <li>Document Number: NXXXX</li>
 <li>Date: 2014-08-20</li>
 <li>Programming Language C++, Library Evolution Working Group</li>
-<li>Reply-to: Matthew Fioravante <a href="&#109;&#97;&#x69;&#108;&#x74;&#111;:&#x66;&#x6D;&#97;&#116;&#116;&#104;&#101;&#119;&#53;&#x38;&#55;&#54;&#64;&#103;m&#97;&#105;&#x6C;&#x2E;&#x63;&#x6F;&#x6D;">&#x66;&#x6D;&#97;&#116;&#116;&#104;&#101;&#119;&#53;&#x38;&#55;&#54;&#64;&#103;m&#97;&#105;&#x6C;&#x2E;&#x63;&#x6F;&#x6D;</a></li>
+<li>Reply-to: Matthew Fioravante <a href="&#x6D;&#x61;&#105;&#108;&#116;&#111;:&#x66;&#x6D;&#97;&#116;&#x74;&#x68;&#x65;&#119;&#x35;&#56;&#55;&#x36;&#64;&#x67;&#109;&#x61;&#x69;&#108;&#x2E;&#x63;&#x6F;&#109;">&#x66;&#x6D;&#97;&#116;&#x74;&#x68;&#x65;&#119;&#x35;&#56;&#55;&#x36;&#64;&#x67;&#109;&#x61;&#x69;&#108;&#x2E;&#x63;&#x6F;&#109;</a></li>
 </ul>
 
-<p>The latest draft, reference header, and links to past discussions on github: </p>
+<p>The latest draft, reference header, and links to past discussions on Github: </p>
 
 <ul>
 <li><a href="https://github.com/fmatthew5876/stdcxx-bitset">https://github.com/fmatthew5876/stdcxx-bitset</a></li>
@@ -16,7 +16,8 @@
 <h1>Introduction</h1>
 
 <p>The proposal enhances <code>std::bitset</code> by adding a new template parameter which 
-allows the programmer to control the size and alignment of the underlying representation.</p>
+allows the programmer to control the size and alignment of the underlying representation
+along with a few additional public members.</p>
 
 <p>This proposal is aimed for a C++ Technical Specification.</p>
 
@@ -24,7 +25,7 @@ allows the programmer to control the size and alignment of the underlying repres
 
 <p>This proposal is a pure library extension. It changes the
 template signature of <code>std::bitset</code> by adding a new template parameter.
-It also adds 2 new aliases <code>std::fast_bitset</code> and <code>std::small_bitset</code> and
+It also adds 2 new aliases <code>std::fast_bitset</code> and <code>std::small_bitset</code>,
 3 new public members, a new constructor overload and a new assignment operator overload.</p>
 
 <h1>Impact on Implementations</h1>
@@ -80,7 +81,9 @@ static_assert(alignof(bitset&lt;N,T&gt;) == alignof(T[N / (sizeof(T) * CHAR_BIT)
 static_assert(sizeof(bitset&lt;N,T&gt;) == sizeof(T[N / (sizeof(T) * CHAR_BIT) + (n % (sizeof(T) * CHAR_BIT) != 0)];
 </code></pre>
 
-<p><em>[note-- <code>bitset&lt;N,T&gt;</code> is not required to actually be implemented using an array of type <code>T</code>, it only needs to satisfy the size and alignment constraints. --end node]</em></p>
+<p>There are no changes being proposed to the current set of members of <code>std::bitset</code>.</p>
+
+<p>[<em>Note</em>: <code>bitset&lt;N,T&gt;</code> is not required to actually be implemented using an array of type <code>T</code>, it only needs to satisfy the size and alignment constraints. --<em>end node</em>]</p>
 
 <h3>Implementation guidance for the default <code>T</code></h3>
 
@@ -102,7 +105,7 @@ Implementors may choose to take this oportunity to change default <code>T</code>
 
 <pre><code>template &lt;size_t N, typename T&gt;
   struct alignas(T) bitset {
-    T x[N / (sizeof(T) * CHAR_BIT) + (n % (sizeof(T) * CHAR_BIT) != 0)];
+    array&lt;T, N / (sizeof(T) * CHAR_BIT) + (n % (sizeof(T) * CHAR_BIT) != 0)&gt; data;
   };
 </code></pre>
 
@@ -120,7 +123,7 @@ Implementors may choose to take this oportunity to change default <code>T</code>
 The <code>bitset</code> must have the same size and alignment as this type.</p>
 
 <pre><code>template &lt;size_t N, typename T&gt;
-  underlying_type&amp; biset&lt;N,T&gt;::underlying() noexcept;
+  underlying_type&amp; bitset&lt;N,T&gt;::underlying() noexcept;
 template &lt;size_t N, typename T&gt;
   const underlying_type&amp; bitset&lt;N,T&gt;::underlying() const noexcept;
 </code></pre>
@@ -145,9 +148,9 @@ implementation can internally perform a cast to <code>underlying_type</code> to 
 constructor and assignment operator overloads.</p>
 
 <pre><code>template &lt;size_t N, typename T&gt; template &lt;typename U&gt;
-  bitset&lt;N,T&gt;::bitset(const bitset&lt;N,U&gt;&amp; other);
+  constexpr bitset&lt;N,T&gt;::bitset(const bitset&lt;N,U&gt;&amp; other) noexcept;
 template &lt;size_t N, typename T&gt; template &lt;typename U&gt;
-  bitset&lt;N,T&gt;&amp; bitset&lt;N,T&gt;::operator=(const bitset&lt;N,U&gt;&amp; other);
+  constexpr bitset&lt;N,T&gt;&amp; bitset&lt;N,T&gt;::operator=(const bitset&lt;N,U&gt;&amp; other) noexcept;
 </code></pre>
 
 <h2>std::fast_bitset&lt;N&gt;</h2>
@@ -201,7 +204,7 @@ template &lt;size_t N&gt; using small_bitset = bitset&lt;N,typename __small_bits
 <h1>Acknowledgments</h1>
 
 <ul>
-<li>Thank you to everyone one the std proposals forum.</li>
+<li>Thank you to everyone one the std-proposals forum.</li>
 </ul>
 
 <!--
