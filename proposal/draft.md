@@ -96,7 +96,7 @@ platforms in choosing which type to use.
 * Memory constrained platforms should choose `T` as to optimize for space (see below: `small_bitset<N>`)
 * If backwards compatibility is of primary concern, platforms can continue to use the same type used in C++14.
 Note that changing the template arguments of bitset will already break ABI compatibility on most platforms.
-Implementors may choose to take this oportunity to change default `T` to optimize for speed or space.
+Implementors may choose to take this opportunity to change default `T` to optimize for speed or space.
 
 ### Conceptual implementation
 
@@ -155,7 +155,7 @@ constructor and assignment operator overloads.
 std::fast\_bitset&lt;N&gt;
 -------------------------
 
-The type `fast_bitset<N>` shall be an alias for `std::bitset<N,T>`, where `T` is choosen to be the fastest underlying representation for `N` bits.
+The type `fast_bitset<N>` shall be an alias for `std::bitset<N,T>`, where `T` is chosen to be the fastest underlying representation for `N` bits.
 
 ###Possible implementation
 
@@ -174,7 +174,7 @@ The type `fast_bitset<N>` shall be an alias for `std::bitset<N,T>`, where `T` is
 std::small\_bitset&lt;N&gt;
 -----------------------
 
-The type `fast_bitset<N>` shall be an alias for `std::bitset<N,T>`, where `T` is choosen to be the smallest underlying representation for `N` bits.
+The type `fast_bitset<N>` shall be an alias for `std::bitset<N,T>`, where `T` is chosen to be the smallest underlying representation for `N` bits.
 Note that there are no restrictions on alignment.
 
 ###Possible implementation
