@@ -6,7 +6,7 @@ Strongly Typed Bitset
 * Programming Language C++, Library Evolution Working Group
 * Reply-to: Matthew Fioravante <fmatthew5876@gmail.com>
 
-The latest draft, reference header, and links to past discussions on github: 
+The latest draft, reference header, and links to past discussions on Github: 
 
 * <https://github.com/fmatthew5876/stdcxx-bitset>
 
@@ -14,7 +14,8 @@ Introduction
 =============================
 
 The proposal enhances `std::bitset` by adding a new template parameter which 
-allows the programmer to control the size and alignment of the underlying representation.
+allows the programmer to control the size and alignment of the underlying representation
+along with a few additional public members.
 
 This proposal is aimed for a C++ Technical Specification.
 
@@ -23,7 +24,7 @@ Impact on the standard
 
 This proposal is a pure library extension. It changes the
 template signature of `std::bitset` by adding a new template parameter.
-It also adds 2 new aliases `std::fast_bitset` and `std::small_bitset` and
+It also adds 2 new aliases `std::fast_bitset` and `std::small_bitset`,
 3 new public members, a new constructor overload and a new assignment operator overload.
 
 Impact on Implementations
@@ -81,7 +82,9 @@ This new declaration is aimed to eventually replace the current `std::bitset`.
     static_assert(alignof(bitset<N,T>) == alignof(T[N / (sizeof(T) * CHAR_BIT) + (n % (sizeof(T) * CHAR_BIT) != 0)];
     static_assert(sizeof(bitset<N,T>) == sizeof(T[N / (sizeof(T) * CHAR_BIT) + (n % (sizeof(T) * CHAR_BIT) != 0)];
 
-*[note-- `bitset<N,T>` is not required to actually be implemented using an array of type `T`, it only needs to satisfy the size and alignment constraints. --end node]*
+There are no changes being proposed to the current set of members of `std::bitset`.
+
+[*Note*: `bitset<N,T>` is not required to actually be implemented using an array of type `T`, it only needs to satisfy the size and alignment constraints. --*end node*]
 
 ###Implementation guidance for the default `T`
 
@@ -101,7 +104,7 @@ A conforming implementation could be constructed using the following data model.
 
     template <size_t N, typename T>
       struct alignas(T) bitset {
-        T x[N / (sizeof(T) * CHAR_BIT) + (n % (sizeof(T) * CHAR_BIT) != 0)];
+        array<T, N / (sizeof(T) * CHAR_BIT) + (n % (sizeof(T) * CHAR_BIT) != 0)> data;
       };
 
 Note that this implementation also works on Linux i386 where `sizeof(long long) == 8` but `struct t { long long x; }; alignof(t) == 4`.
@@ -118,7 +121,7 @@ The `underlying_type` typedef is present to inform the programmer what kind of s
 The `bitset` must have the same size and alignment as this type.
 
     template <size_t N, typename T>
-      underlying_type& biset<N,T>::underlying() noexcept;
+      underlying_type& bitset<N,T>::underlying() noexcept;
     template <size_t N, typename T>
       const underlying_type& bitset<N,T>::underlying() const noexcept;
 
@@ -144,9 +147,9 @@ A bitset using one representation `T` may be copied from another bitset using a 
 constructor and assignment operator overloads.
 
     template <size_t N, typename T> template <typename U>
-      bitset<N,T>::bitset(const bitset<N,U>& other);
+      constexpr bitset<N,T>::bitset(const bitset<N,U>& other) noexcept;
     template <size_t N, typename T> template <typename U>
-      bitset<N,T>& bitset<N,T>::operator=(const bitset<N,U>& other);
+      constexpr bitset<N,T>& bitset<N,T>::operator=(const bitset<N,U>& other) noexcept;
 
 
 std::fast\_bitset&lt;N&gt;
@@ -199,7 +202,7 @@ Use Cases
 Acknowledgments
 ====================
 
-* Thank you to everyone one the std proposals forum.
+* Thank you to everyone one the std-proposals forum.
 
 
 <!--
