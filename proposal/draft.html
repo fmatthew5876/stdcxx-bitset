@@ -4,7 +4,7 @@
 <li>Document Number: NXXXX</li>
 <li>Date: 2014-08-20</li>
 <li>Programming Language C++, Library Evolution Working Group</li>
-<li>Reply-to: Matthew Fioravante <a href="&#x6D;&#x61;&#105;&#108;&#116;&#111;:&#x66;&#x6D;&#97;&#116;&#x74;&#x68;&#x65;&#119;&#x35;&#56;&#55;&#x36;&#64;&#x67;&#109;&#x61;&#x69;&#108;&#x2E;&#x63;&#x6F;&#109;">&#x66;&#x6D;&#97;&#116;&#x74;&#x68;&#x65;&#119;&#x35;&#56;&#55;&#x36;&#64;&#x67;&#109;&#x61;&#x69;&#108;&#x2E;&#x63;&#x6F;&#109;</a></li>
+<li>Reply-to: Matthew Fioravante <a href="&#109;&#97;&#x69;&#108;&#116;&#111;:f&#x6D;&#x61;&#x74;&#x74;&#x68;&#101;w&#x35;&#56;&#x37;&#54;&#64;&#103;&#109;&#x61;i&#108;&#46;&#x63;&#x6F;&#x6D;">f&#x6D;&#x61;&#x74;&#x74;&#x68;&#101;w&#x35;&#56;&#x37;&#54;&#64;&#103;&#109;&#x61;i&#108;&#46;&#x63;&#x6F;&#x6D;</a></li>
 </ul>
 
 <p>The latest draft, reference header, and links to past discussions on Github: </p>
@@ -96,7 +96,7 @@ platforms in choosing which type to use.</p>
 <li>Memory constrained platforms should choose <code>T</code> as to optimize for space (see below: <code>small_bitset&lt;N&gt;</code>)</li>
 <li>If backwards compatibility is of primary concern, platforms can continue to use the same type used in C++14.
 Note that changing the template arguments of bitset will already break ABI compatibility on most platforms.
-Implementors may choose to take this oportunity to change default <code>T</code> to optimize for speed or space.</li>
+Implementors may choose to take this opportunity to change default <code>T</code> to optimize for speed or space.</li>
 </ul>
 
 <h3>Conceptual implementation</h3>
@@ -155,7 +155,7 @@ template &lt;size_t N, typename T&gt; template &lt;typename U&gt;
 
 <h2>std::fast_bitset&lt;N&gt;</h2>
 
-<p>The type <code>fast_bitset&lt;N&gt;</code> shall be an alias for <code>std::bitset&lt;N,T&gt;</code>, where <code>T</code> is choosen to be the fastest underlying representation for <code>N</code> bits.</p>
+<p>The type <code>fast_bitset&lt;N&gt;</code> shall be an alias for <code>std::bitset&lt;N,T&gt;</code>, where <code>T</code> is chosen to be the fastest underlying representation for <code>N</code> bits.</p>
 
 <h3>Possible implementation</h3>
 
@@ -174,7 +174,7 @@ template &lt;size_t N&gt; using fast_bitset = bitset&lt;N,typename __fast_bitset
 
 <h2>std::small_bitset&lt;N&gt;</h2>
 
-<p>The type <code>fast_bitset&lt;N&gt;</code> shall be an alias for <code>std::bitset&lt;N,T&gt;</code>, where <code>T</code> is choosen to be the smallest underlying representation for <code>N</code> bits.
+<p>The type <code>fast_bitset&lt;N&gt;</code> shall be an alias for <code>std::bitset&lt;N,T&gt;</code>, where <code>T</code> is chosen to be the smallest underlying representation for <code>N</code> bits.
 Note that there are no restrictions on alignment.</p>
 
 <h3>Possible implementation</h3>
