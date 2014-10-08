@@ -1,7 +1,7 @@
 Strongly Typed Bitset
 ==========================================
 
-* Document Number: NXXXX
+* Document Number: N4202
 * Date: 2014-08-20
 * Programming Language C++, Library Evolution Working Group
 * Reply-to: Matthew Fioravante <fmatthew5876@gmail.com>
